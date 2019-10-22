@@ -1,0 +1,41 @@
+Subject: [PATCH] Fix bugs regarding system app cannot write visible path
+
+ 1. some system app by OEM can not write file to sdcard through visible
+path("/storage/[UUID]") despite it has WRITE_MEDIA_STORAGE.
+
+Test: Check system app which has sdcard_rw permission writes file to sdcard("/storage/[UUID]").
+
+diff --git a/data/etc/platform.xml b/data/etc/platform.xml
+index ab90e1b..5e8a07c 100644
+--- a/data/etc/platform.xml
++++ b/data/etc/platform.xml
+@@ -62,6 +62,7 @@
+ 
+     <permission name="android.permission.WRITE_MEDIA_STORAGE" >
+         <group gid="media_rw" />
++        <group gid="sdcard_rw" />
+     </permission>
+ 
+     <permission name="android.permission.ACCESS_MTP" >
+diff --git a/services/core/java/com/android/server/pm/PackageManagerService.java b/services/core/java/com/android/server/pm/PackageManagerService.java
+index 9b50a15..fd3154e 100644
+--- a/services/core/java/com/android/server/pm/PackageManagerService.java
++++ b/services/core/java/com/android/server/pm/PackageManagerService.java
+@@ -24,6 +24,7 @@
+ import static android.Manifest.permission.REQUEST_DELETE_PACKAGES;
+ import static android.Manifest.permission.SET_HARMFUL_APP_WARNINGS;
+ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
++import static android.Manifest.permission.WRITE_MEDIA_STORAGE;
+ import static android.content.pm.PackageManager.CERT_INPUT_RAW_X509;
+ import static android.content.pm.PackageManager.CERT_INPUT_SHA256;
+ import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
+@@ -21352,6 +21353,9 @@
+                 if (Process.isIsolated(uid)) {
+                     return Zygote.MOUNT_EXTERNAL_NONE;
+                 }
++                if (checkUidPermission(WRITE_MEDIA_STORAGE, uid) == PERMISSION_GRANTED) {
++                    return Zygote.MOUNT_EXTERNAL_DEFAULT;
++                }
+                 if (checkUidPermission(READ_EXTERNAL_STORAGE, uid) == PERMISSION_DENIED) {
+                     return Zygote.MOUNT_EXTERNAL_DEFAULT;
+                 }

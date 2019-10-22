@@ -1,0 +1,19 @@
+Subject: [PATCH] Fixed a2dp tx queue fake overflow
+
+Test: Connected with bluetooth headset, music stream is
+chopping sometimes.
+
+diff --git a/btif/src/btif_a2dp_source.cc b/btif/src/btif_a2dp_source.cc
+index aa491ab..3383a01 100644
+--- a/btif/src/btif_a2dp_source.cc
++++ b/btif/src/btif_a2dp_source.cc
+@@ -953,8 +953,7 @@
+   }
+ 
+   // Check for TX queue overflow
+-  // TODO: Using frames_n here is probably wrong: should be "+ 1" instead.
+-  if (fixed_queue_length(btif_a2dp_source_cb.tx_audio_queue) + frames_n >
++  if (fixed_queue_length(btif_a2dp_source_cb.tx_audio_queue) + 1 >
+       MAX_OUTPUT_A2DP_FRAME_QUEUE_SZ) {
+     LOG_WARN(LOG_TAG, "%s: TX queue buffer size now=%u adding=%u max=%d",
+              __func__,

@@ -1,0 +1,17 @@
+Subject: [PATCH] [TEMP] graphics: libhwc2on1adapter: fix up layer handles
+
+diff --git a/graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp b/graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp
+index 6551a99a..6896243c 100644
+--- a/graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp
++++ b/graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp
+@@ -2368,6 +2368,10 @@ bool HWC2On1Adapter::prepareAllDisplays() {
+         for (size_t l = 0; l < displayContents->numHwLayers; ++l) {
+             auto& layer = displayContents->hwLayers[l];
+             ALOGV("  %zd: %d", l, layer.compositionType);
++
++            // TODO: find proper fix
++            if (reinterpret_cast<uintptr_t>(layer.handle) == 0xff000000)
++                layer.handle = nullptr;
+         }
+     }
+ 

@@ -1,0 +1,18 @@
+Subject: [PATCH] libui: Ignore invalid usage bits in buffer descriptor
+
+Huawei gralloc seems to always provide wrong usage bits,
+so enforcing this check breaks video decoding.
+
+diff --git a/libs/ui/Gralloc2.cpp b/libs/ui/Gralloc2.cpp
+index 918251f9dc4..4c91254428e 100644
+--- a/libs/ui/Gralloc2.cpp
++++ b/libs/ui/Gralloc2.cpp
+@@ -98,7 +98,7 @@ Gralloc2::Error Mapper::validateBufferDescriptorInfo(
+     if (descriptorInfo.usage & ~validUsageBits) {
+         ALOGE("buffer descriptor contains invalid usage bits 0x%" PRIx64,
+               descriptorInfo.usage & ~validUsageBits);
+-        return Error::BAD_VALUE;
++        return Error::NONE;
+     }
+     return Error::NONE;
+ }

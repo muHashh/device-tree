@@ -1,0 +1,63 @@
+Subject: [PATCH] libcrecovery: Convert makefile to bp.
+
+This library is (indirectly) used from another .bp project.
+
+diff --git a/Android.mk b/Android.mk
+index 7ffcd70a..59c908ae 100755
+--- a/Android.mk
++++ b/Android.mk
+@@ -840,7 +840,6 @@ include $(commands_TWRP_local_path)/injecttwrp/Android.mk \
+     $(commands_TWRP_local_path)/flashutils/Android.mk \
+     $(commands_TWRP_local_path)/pigz/Android.mk \
+     $(commands_TWRP_local_path)/libtar/Android.mk \
+-    $(commands_TWRP_local_path)/libcrecovery/Android.mk \
+     $(commands_TWRP_local_path)/libblkid/Android.mk \
+     $(commands_TWRP_local_path)/minuitwrp/Android.mk \
+     $(commands_TWRP_local_path)/openaes/Android.mk \
+diff --git a/libcrecovery/Android.bp b/libcrecovery/Android.bp
+new file mode 100644
+index 00000000..c5d4ae8d
+--- /dev/null
++++ b/libcrecovery/Android.bp
+@@ -0,0 +1,18 @@
++cc_library {
++    name: "libcrecovery",
++
++    host_supported: true,
++
++    tags: ["eng"],
++
++    srcs: [
++        "system.c",
++        "popen.c",
++    ],
++
++    target: {
++        darwin: {
++            enabled: false,
++        },
++    },
++}
+diff --git a/libcrecovery/Android.mk b/libcrecovery/Android.mk
+deleted file mode 100644
+index 8434d519..00000000
+--- a/libcrecovery/Android.mk
++++ /dev/null
+@@ -1,17 +0,0 @@
+-LOCAL_PATH := $(call my-dir)
+-
+-ifneq ($(TARGET_SIMULATOR),true)
+-
+-include $(CLEAR_VARS)
+-LOCAL_SRC_FILES := system.c popen.c
+-LOCAL_MODULE := libcrecovery
+-LOCAL_MODULE_TAGS := eng
+-include $(BUILD_STATIC_LIBRARY)
+-
+-include $(CLEAR_VARS)
+-LOCAL_SRC_FILES := system.c popen.c
+-LOCAL_MODULE := libcrecovery
+-LOCAL_MODULE_TAGS := eng
+-include $(BUILD_SHARED_LIBRARY)
+-
+-endif

@@ -1,0 +1,21 @@
+Subject: [PATCH] Fix load legacy HAL light
+
+diff --git a/light/2.0/default/Light.cpp b/light/2.0/default/Light.cpp
+index d738a6d2a..2e56319d7 100644
+--- a/light/2.0/default/Light.cpp
++++ b/light/2.0/default/Light.cpp
+@@ -100,13 +100,9 @@
+ 
+ const static std::map<Type, const char*> kLogicalLights = {
+     {Type::BACKLIGHT,     LIGHT_ID_BACKLIGHT},
+-    {Type::KEYBOARD,      LIGHT_ID_KEYBOARD},
+-    {Type::BUTTONS,       LIGHT_ID_BUTTONS},
+     {Type::BATTERY,       LIGHT_ID_BATTERY},
+     {Type::NOTIFICATIONS, LIGHT_ID_NOTIFICATIONS},
+-    {Type::ATTENTION,     LIGHT_ID_ATTENTION},
+-    {Type::BLUETOOTH,     LIGHT_ID_BLUETOOTH},
+-    {Type::WIFI,          LIGHT_ID_WIFI}
++    {Type::ATTENTION,     LIGHT_ID_ATTENTION}
+ };
+ 
+ Return<void> Light::debug(const hidl_handle& handle, const hidl_vec<hidl_string>& /* options */) {

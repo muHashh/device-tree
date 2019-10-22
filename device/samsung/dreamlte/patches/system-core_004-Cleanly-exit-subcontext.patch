@@ -1,0 +1,35 @@
+Subject: [PATCH] init: Cleanly exit subcontext processes upon init's death
+
+This change makes the subcontext processes cleanly exit in the event of
+the init's socket being closed. If that was an accident, init will
+respawn the process immediately. Otherwise, it will just quietly go
+away.
+
+diff --git a/init/subcontext.cpp b/init/subcontext.cpp
+index fdb46415d4e..b33b9bc6b6c 100644
+--- a/init/subcontext.cpp
++++ b/init/subcontext.cpp
+@@ -64,7 +64,9 @@ constexpr size_t kBufferSize = 4096;
+ Result<std::string> ReadMessage(int socket) {
+     char buffer[kBufferSize] = {};
+     auto result = TEMP_FAILURE_RETRY(recv(socket, buffer, sizeof(buffer), 0));
+-    if (result <= 0) {
++    if (result == 0) {
++        return Error();
++    } else if (result < 0) {
+         return ErrnoError();
+     }
+     return std::string(buffer, result);
+@@ -177,6 +179,12 @@ void SubcontextProcess::MainLoop() {
+ 
+         auto init_message = ReadMessage(init_fd_);
+         if (!init_message) {
++            if (init_message.error_errno() == 0) {
++                // If the init file descriptor was closed, let's exit quietly. If
++                // this was accidental, init will restart us. If init died, this
++                // avoids calling abort(3) unnecessarily.
++                return;
++            }
+             LOG(FATAL) << "Could not read message from init: " << init_message.error();
+         }
+ 

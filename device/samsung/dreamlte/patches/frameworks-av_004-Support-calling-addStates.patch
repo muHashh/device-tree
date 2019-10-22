@@ -1,0 +1,62 @@
+Subject: [PATCH] CameraService: Support calling addStates in enumerateProviders
+
+Some pre-P camera HALs trigger onDeviceStatusChange callback during HAL init.
+This is horribly wrong and causes a race condition between enumerateProviders
+and onDeviceStatusChange. While it wasn't really harmful in O, in P call sequence
+was changed and now this race condition leads to two problems: null pointer dereference
+in addStates because mFlashlight is not initialized at a proper timing; mServiceLock
+deadlock because updateCameraNumAndIds and enumerateProviders are called at the same time.
+Moving addStates back to enumerateProviders makes the sequence more similar to O, and doesn't
+
+diff --git a/services/camera/libcameraservice/Android.mk b/services/camera/libcameraservice/Android.mk
+index d974e46..0983de0 100644
+--- a/services/camera/libcameraservice/Android.mk
++++ b/services/camera/libcameraservice/Android.mk
+@@ -109,6 +109,10 @@
+     LOCAL_CFLAGS += -DFACE_UNLOCK_CAMERA_ID=$(TARGET_FACE_UNLOCK_CAMERA_ID)
+ endif
+ 
++ifeq ($(TARGET_CAMERA_NEEDS_ADD_STATES_IN_ENUMERATE), true)
++    LOCAL_CFLAGS += -DCAMERA_NEEDS_ADD_STATES_IN_ENUMERATE
++endif
++
+ LOCAL_MODULE:= libcameraservice
+ 
+ include $(BUILD_SHARED_LIBRARY)
+diff --git a/services/camera/libcameraservice/CameraService.cpp b/services/camera/libcameraservice/CameraService.cpp
+index 841c901..5d3167e 100644
+--- a/services/camera/libcameraservice/CameraService.cpp
++++ b/services/camera/libcameraservice/CameraService.cpp
+@@ -184,6 +184,21 @@
+ 
+     for (auto& cameraId : deviceIds) {
+         String8 id8 = String8(cameraId.c_str());
++
++#ifdef CAMERA_NEEDS_ADD_STATES_IN_ENUMERATE
++        bool cameraFound = false;
++        {
++            Mutex::Autolock lock(mCameraStatesLock);
++            auto iter = mCameraStates.find(id8);
++            if (iter != mCameraStates.end()) {
++                cameraFound = true;
++            }
++        }
++        if (!cameraFound) {
++            addStates(id8);
++        }
++#endif
++
+         onDeviceStatusChanged(id8, CameraDeviceStatus::PRESENT);
+     }
+ 
+@@ -282,8 +297,10 @@
+             ALOGI("%s: Unknown camera ID %s, a new camera is added",
+                     __FUNCTION__, id.string());
+ 
++#ifndef CAMERA_NEEDS_ADD_STATES_IN_ENUMERATE
+             // First add as absent to make sure clients are notified below
+             addStates(id);
++#endif
+ 
+             updateStatus(newStatus, id);
+         } else {

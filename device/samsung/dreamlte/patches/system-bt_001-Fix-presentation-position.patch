@@ -1,0 +1,51 @@
+Subject: [PATCH] Fix presentation position after audioserver kill
+
+Audio server death does not kill the BT interface, so old BT
+session presentation position is returned. Before first stream
+write, get presentation position and use as offset for subsequent
+get presentation calls.
+
+diff --git a/audio_a2dp_hw/src/audio_a2dp_hw.cc b/audio_a2dp_hw/src/audio_a2dp_hw.cc
+index 2fb139f..9f20440 100644
+--- a/audio_a2dp_hw/src/audio_a2dp_hw.cc
++++ b/audio_a2dp_hw/src/audio_a2dp_hw.cc
+@@ -131,6 +131,7 @@
+   struct audio_stream_out stream;
+   struct a2dp_stream_common common;
+   uint64_t frames_presented;  // frames written, never reset
++  uint64_t frames_presented_offset; // frames presented reported by driver before any stream write
+   uint64_t frames_rendered;   // frames written, reset on standby
+ };
+ 
+@@ -956,6 +957,22 @@
+           out->common.audio_fd);
+   }
+ 
++  // Get starting presentation position frame count as offset
++  if (out->frames_presented == 0) {
++      uint64_t bytes = 0;
++      uint16_t delay_report = 0;
++      struct timespec timestamp;
++      if (enable_delay_reporting &&
++          a2dp_get_presentation_position_cmd(&out->common, &bytes, &delay_report,
++                                             &timestamp) == 0) {
++          uint64_t delay_ns = delay_report * DELAY_TO_NS;
++          if (delay_ns > MIN_DELAY_MS * MS_TO_NS &&
++              delay_ns < MAX_DELAY_MS * MS_TO_NS) {
++              out->frames_presented_offset = bytes / audio_stream_out_frame_size(stream);
++              DEBUG("frames_presented_offset:%llu", (long long)out->frames_presented_offset);
++          }
++      }
++  }
+   lock.unlock();
+   sent = skt_write(out->common.audio_fd, buffer, write_bytes);
+   lock.lock();
+@@ -1363,7 +1380,7 @@
+     uint64_t delay_ns = delay_report * DELAY_TO_NS;
+     if (delay_ns > MIN_DELAY_MS * MS_TO_NS &&
+         delay_ns < MAX_DELAY_MS * MS_TO_NS) {
+-      *frames = bytes / audio_stream_out_frame_size(stream);
++      *frames = (bytes / audio_stream_out_frame_size(stream)) - out->frames_presented_offset;
+ 
+       timestamp->tv_nsec += delay_ns;
+       if (timestamp->tv_nsec > 1 * SEC_TO_NS) {

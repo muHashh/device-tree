@@ -1,0 +1,19 @@
+Subject: [PATCH]  Fix file exist in SD card when delete from Gallery
+
+The permission of writing sd card is not effective which cause
+this bug happen.
+
+Add write sd card permission.
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 43a2b3f61..0263e6d5e 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -43,6 +43,7 @@
+     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
++    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
+     <uses-permission android:name="com.android.gallery3d.permission.GALLERY_PROVIDER" />
+     <uses-permission android:name="android.permission.BLUETOOTH" />
+     <uses-permission android:name="android.permission.READ_PHONE_STATE" />

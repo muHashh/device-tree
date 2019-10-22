@@ -1,0 +1,122 @@
+Subject: [PATCH] mtdutils: Convert makefile to bp.
+
+Executables are not yet converted.
+
+diff --git a/Android.mk b/Android.mk
+index 10bab7f3..71d42218 100755
+--- a/Android.mk
++++ b/Android.mk
+@@ -837,7 +837,6 @@ include $(commands_TWRP_local_path)/injecttwrp/Android.mk \
+     $(commands_TWRP_local_path)/gui/Android.mk \
+     $(commands_TWRP_local_path)/mmcutils/Android.mk \
+     $(commands_TWRP_local_path)/prebuilt/Android.mk \
+-    $(commands_TWRP_local_path)/mtdutils/Android.mk \
+     $(commands_TWRP_local_path)/flashutils/Android.mk \
+     $(commands_TWRP_local_path)/pigz/Android.mk \
+     $(commands_TWRP_local_path)/libtar/Android.mk \
+diff --git a/mtdutils/Android.bp b/mtdutils/Android.bp
+new file mode 100644
+index 00000000..277477e3
+--- /dev/null
++++ b/mtdutils/Android.bp
+@@ -0,0 +1,25 @@
++cc_library {
++    name: "libmtdutils",
++
++    host_supported: true,
++    export_include_dirs: ["."],
++
++    srcs: [
++        "mtdutils.c",
++        "mounts.c",
++    ],
++
++    shared_libs: [
++        "libcutils",
++        "libc",
++    ],
++
++    target: {
++        darwin: {
++            enabled: false,
++        },
++        linux_glibc: {
++            enabled: false,
++        },
++    },
++}
+diff --git a/mtdutils/Android.mk b/mtdutils/Android.mk
+deleted file mode 100644
+index 87ac0812..00000000
+--- a/mtdutils/Android.mk
++++ /dev/null
+@@ -1,69 +0,0 @@
+-ifneq ($(TARGET_SIMULATOR),true)
+-
+-LOCAL_PATH := $(call my-dir)
+-include $(CLEAR_VARS)
+-
+-LOCAL_SRC_FILES := \
+-	mtdutils.c \
+-	mounts.c
+-
+-ifneq ($(filter rk30xx rk3188,$(TARGET_BOARD_PLATFORM)),)
+-LOCAL_SRC_FILES += rk3xhack.c
+-LOCAL_CFLAGS += -DRK3X
+-endif
+-
+-ifeq ($(TARGET_MTD_BY_NAME),true)
+-LOCAL_CFLAGS += -DBYNAME
+-endif
+-
+-LOCAL_MODULE := libmtdutils
+-LOCAL_STATIC_LIBRARIES := libcutils libc
+-LOCAL_CLANG := true
+-
+-include $(BUILD_STATIC_LIBRARY)
+-
+-include $(CLEAR_VARS)
+-
+-LOCAL_SRC_FILES := \
+-	mtdutils.c \
+-	mounts.c
+-
+-ifneq ($(filter rk30xx rk3188,$(TARGET_BOARD_PLATFORM)),)
+-LOCAL_SRC_FILES += rk3xhack.c
+-LOCAL_CFLAGS += -DRK3X
+-endif
+-
+-ifeq ($(TARGET_MTD_BY_NAME),true)
+-LOCAL_CFLAGS += -DBYNAME
+-endif
+-
+-LOCAL_MODULE := libmtdutils
+-LOCAL_SHARED_LIBRARIES := libcutils libc
+-LOCAL_CLANG := true
+-
+-include $(BUILD_SHARED_LIBRARY)
+-
+-ifeq ($(BOARD_USES_BML_OVER_MTD),true)
+-include $(CLEAR_VARS)
+-LOCAL_SRC_FILES := bml_over_mtd.c
+-LOCAL_C_INCLUDES += $(commands_recovery_local_path)/mtdutils
+-LOCAL_MODULE := libbml_over_mtd
+-LOCAL_MODULE_TAGS := eng
+-LOCAL_CFLAGS += -Dmain=bml_over_mtd_main
+-include $(BUILD_STATIC_LIBRARY)
+-
+-include $(CLEAR_VARS)
+-LOCAL_SRC_FILES := bml_over_mtd.c
+-LOCAL_MODULE := bml_over_mtd
+-LOCAL_MODULE_TAGS := eng
+-LOCAL_MODULE_CLASS := UTILITY_EXECUTABLES
+-LOCAL_MODULE_PATH := $(PRODUCT_OUT)/utilities
+-LOCAL_UNSTRIPPED_PATH := $(PRODUCT_OUT)/symbols/utilities
+-LOCAL_MODULE_STEM := bml_over_mtd
+-LOCAL_C_INCLUDES += $(commands_recovery_local_path)/mtdutils
+-LOCAL_SHARED_LIBRARIES := libmtdutils libcutils liblog libc
+-include $(BUILD_EXECUTABLE)
+-endif
+-
+-endif	# !TARGET_SIMULATOR
+-

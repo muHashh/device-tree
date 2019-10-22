@@ -1,0 +1,55 @@
+# Device platform
+ro.product.board=universal8895
+ro.board.platform=exynos5
+
+# read DS/SS property
+import /efs/factory.prop
+
+# boot device
+ro.boot.bootdevice=11120000.ufs
+
+# Display
+debug.sf.disable_backpressure=1
+debug.sf.latch_unsignaled=1
+ro.hdcp2.rx=tz
+
+# Disable buffer age
+debug.hwui.use_buffer_age=false
+
+# H/W Composer
+debug.hwc.skip_dma_types=0,2
+debug.hwc.force_gpu=1
+
+# UI thread scheduling
+# sys.use_fifo_ui=1
+
+# Properties - HWC - not used on lineage
+debug.hwc.winupdate=1
+debug.hwc.otf=1
+debug.slsi_platform=1
+
+# Timeout failed shutdowns
+ro.build.shutdown_timeout=5
+
+# Stagefright media
+# af.thread.throttle=false
+# camera.disable_zsl_mode=true
+
+# Forcing AUX for listed packages
+# vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.google.android.GoogleCamera,com.bsgmod.camera,org.lineageos.snap
+# Forcing HAL1 for below packages
+# vendor.camera.hal1.packagelist=com.skype.raider,com.whatsapp,com.facebook.katana,com.gbwhatsapp,com.gbinsta
+
+# Optimizations
+config.disable_atlas=true
+persist.sys.strictmode.disable=true
+
+# Hardware tweaks
+# ro.power_profile=/system/etc/power_profile.xml
+
+# art optimization
+# dalvik.vm.dex2oat-filter=speed
+# dalvik.vm.image-dex2oat-filter=speed
+
+# Audio
+ro.config.vc_call_vol_steps=5

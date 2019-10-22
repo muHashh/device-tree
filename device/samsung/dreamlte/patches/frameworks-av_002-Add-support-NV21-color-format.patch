@@ -1,0 +1,35 @@
+Subject: [PATCH] libstagefright: Add support for NV21 color format
+
+This adds the native color format 'OMX_SEC_COLOR_FormatNV21Linear' of
+exynos5 which is NV21 and needed for the camera.
+
+diff --git a/media/libstagefright/Android.bp b/media/libstagefright/Android.bp
+index c8d4e4a..c179950 100644
+--- a/media/libstagefright/Android.bp
++++ b/media/libstagefright/Android.bp
+@@ -204,6 +204,7 @@
+         "-Werror",
+         "-Wno-error=deprecated-declarations",
+         "-Wall",
++        "-DUSE_SAMSUNG_CAMERAFORMAT_NV21",
+     ],
+ 
+     version_script: "exports.lds",
+diff --git a/media/libstagefright/CameraSource.cpp b/media/libstagefright/CameraSource.cpp
+index 36a2d3f..08a4974 100644
+--- a/media/libstagefright/CameraSource.cpp
++++ b/media/libstagefright/CameraSource.cpp
+@@ -146,6 +146,13 @@
+         return OMX_COLOR_FormatYUV420SemiPlanar;
+     }
+ 
++#ifdef USE_SAMSUNG_CAMERAFORMAT_NV21
++    if (!strcmp(colorFormat, CameraParameters::PIXEL_FORMAT_YUV420SP_NV21)) {
++        static const int OMX_SEC_COLOR_FormatNV21Linear = 0x7F000011;
++        return OMX_SEC_COLOR_FormatNV21Linear;
++    }
++#endif /* USE_SAMSUNG_CAMERAFORMAT_NV21 */
++
+     if (!strcmp(colorFormat, CameraParameters::PIXEL_FORMAT_YUV422I)) {
+         return OMX_COLOR_FormatYCbYCr;
+     }

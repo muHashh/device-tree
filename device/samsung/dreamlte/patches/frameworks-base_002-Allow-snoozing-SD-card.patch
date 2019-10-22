@@ -1,0 +1,31 @@
+Subject: [PATCH] SystemUI: Allow snoozing SD card notification unconditionally
+
+FBE devices usually don't support adoptable therefore resulting
+in SD notification popping up every boot which may be quite annoying.
+
+diff --git a/packages/SystemUI/src/com/android/systemui/usb/StorageNotification.java b/packages/SystemUI/src/com/android/systemui/usb/StorageNotification.java
+index 43e0d7b13bfd..91af32960391 100644
+--- a/packages/SystemUI/src/com/android/systemui/usb/StorageNotification.java
++++ b/packages/SystemUI/src/com/android/systemui/usb/StorageNotification.java
+@@ -357,9 +357,8 @@ private Notification onVolumeMounted(VolumeInfo vol) {
+         final VolumeRecord rec = mStorageManager.findRecordByUuid(vol.getFsUuid());
+         final DiskInfo disk = vol.getDisk();
+ 
+-        // Don't annoy when user dismissed in past.  (But make sure the disk is adoptable; we
+-        // used to allow snoozing non-adoptable disks too.)
+-        if (rec.isSnoozed() && disk.isAdoptable()) {
++        // Don't annoy when user dismissed in past.
++        if (rec.isSnoozed() && (disk.isAdoptable() || disk.isSd())) {
+             return null;
+         }
+ 
+@@ -398,8 +397,7 @@ private Notification onVolumeMounted(VolumeInfo vol) {
+             if (disk.isUsb()) {
+                 builder.setOngoing(true);
+             }
+-            // Non-adoptable disks can't be snoozed.
+-            if (disk.isAdoptable()) {
++            if (disk.isAdoptable() || disk.isSd()) {
+                 builder.setDeleteIntent(buildSnoozeIntent(vol.getFsUuid()));
+             }
+ 

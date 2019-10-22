@@ -1,0 +1,59 @@
+Subject: [PATCH] busybox: fix building android-9.0
+
+diff --git a/Android.mk b/Android.mk
+index a360089..b715f56 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -7,8 +7,8 @@
+ BIONIC_ICS := false
+ BIONIC_L := true
+ 
+-BUSYBOX_WARNING_HIDE := -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration -Wno-implicit-fallthrough \
+-			-Wno-sign-compare -Wno-format-overflow -Wno-shift-negative-value -Wno-logical-not-parentheses -Wno-return-type
++BUSYBOX_WARNING_HIDE := -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration \
++			-Wno-sign-compare -Wno-return-type -Wno-unused-variable
+
+ # Make a static library for regex.
+ include $(CLEAR_VARS)
+@@ -24,7 +24,6 @@
+ LOCAL_C_INCLUDES := $(BB_PATH)/android/librpc
+ LOCAL_MODULE := libuclibcrpc
+ LOCAL_CFLAGS += -fno-strict-aliasing $(BUSYBOX_WARNING_HIDE)
+-LOCAL_CLANG := false
+ ifeq ($(BIONIC_L),true)
+ LOCAL_CFLAGS += -DBIONIC_ICS -DBIONIC_L
+ endif
+diff --git a/android/librpc/xdr_rec.c b/android/librpc/xdr_rec.c
+index d0123aa87..53c2dda51 100644
+--- a/android/librpc/xdr_rec.c
++++ b/android/librpc/xdr_rec.c
+@@ -248,7 +248,7 @@ xdrrec_getint32 (XDR *xdrs, int32_t *ip)
+ static bool_t
+ xdrrec_getlong (XDR *xdrs, long *lp)
+ {
+-  int32_t v;
++  int32_t v = 0;
+   bool_t r = xdrrec_getint32 (xdrs, &v);
+   *lp = v;
+   return r;
+diff --git a/android/regex/bb_regex.c b/android/regex/bb_regex.c
+index 682123c0d..0a5780d24 100644
+--- a/android/regex/bb_regex.c
++++ b/android/regex/bb_regex.c
+@@ -2928,7 +2928,7 @@ bb_re_compile_fastmap (bufp)
+   char *destination;
+ #endif
+   /* We don't push any register information onto the failure stack.  */
+-  unsigned num_regs = 0;
++  //unsigned num_regs = 0;
+ 
+   register char *fastmap = bufp->fastmap;
+   unsigned char *pattern = bufp->buffer;
+@@ -5479,6 +5479,7 @@ bb_regerror (errcode, preg, errbuf, errbuf_size)
+ {
+   const char *msg;
+   size_t msg_size;
++      (void) preg;
+ 
+   if (errcode < 0
+       || errcode >= (sizeof (re_error_msgid) / sizeof (re_error_msgid[0])))

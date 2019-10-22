@@ -1,0 +1,26 @@
+Subject: [PATCH] libui: fix cannot locate symbol open vendor camera module
+
+ "_ZN7android13GraphicBufferC1EjjijjP13native_handleb" referenced by "/system/lib/libexynoscamera.so"
+
+diff --git a/libs/ui/Android.bp b/libs/ui/Android.bp
+index 9770da2..033e764 100644
+--- a/libs/ui/Android.bp
++++ b/libs/ui/Android.bp
+@@ -22,7 +22,6 @@
+     clang: true,
+     cflags: [
+         "-Wall",
+-        "-Werror",
+     ],
+     cppflags: [
+         "-Weverything",
+diff --git a/libs/ui/GraphicBuffer.cpp b/libs/ui/GraphicBuffer.cpp
+index 87e5b40..9634db1 100644
+--- a/libs/ui/GraphicBuffer.cpp
++++ b/libs/ui/GraphicBuffer.cpp
+@@ -512,3 +512,5 @@
+ // ---------------------------------------------------------------------------
+ 
+ }; // namespace android
++
++__strong_alias(_ZN7android13GraphicBufferC1EjjijjP13native_handleb,_ZN7android13GraphicBufferC1EjjijjjP13native_handleb);

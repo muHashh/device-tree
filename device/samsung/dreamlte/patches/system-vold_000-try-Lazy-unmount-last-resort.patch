@@ -1,0 +1,18 @@
+Subject: [PATCH] cryptfs: try Lazy unmount as last resort
+
+diff --git a/cryptfs.cpp b/cryptfs.cpp
+index 2ab3d09..08831da 100644
+--- a/cryptfs.cpp
++++ b/cryptfs.cpp
+@@ -1739,6 +1739,11 @@
+             } else if (i == (WAIT_UNMOUNT_COUNT - 20)) {
+                 SLOGW("sending SIGKILL to processes with open files\n");
+                 android::vold::KillProcessesWithOpenFiles(mountpoint, SIGKILL);
++            } else if (i == (WAIT_UNMOUNT_COUNT - 10)) {
++                SLOGW("Error unmounting %s after %d attempts. Lazy unmounting instead\n", mountpoint, i);
++                if (umount2(mountpoint, MNT_DETACH) == 0) {
++                    break;
++                }
+             }
+         }
+ 

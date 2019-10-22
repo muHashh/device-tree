@@ -1,0 +1,58 @@
+build: remove error for additional properties 
+
+diff --git a/core/main.mk b/core/main.mk
+index e1b0535..5eb15c4 100644
+--- a/core/main.mk
++++ b/core/main.mk
+@@ -132,31 +132,13 @@ endif
+ 
+ #
+ # -----------------------------------------------------------------
+-# Validate ADDITIONAL_DEFAULT_PROPERTIES.
+-ifneq ($(ADDITIONAL_DEFAULT_PROPERTIES),)
+-$(error ADDITIONAL_DEFAULT_PROPERTIES must not be set before here: $(ADDITIONAL_DEFAULT_PROPERTIES))
+-endif
+-
+-#
+-# -----------------------------------------------------------------
+-# Validate ADDITIONAL_BUILD_PROPERTIES.
+-ifneq ($(ADDITIONAL_BUILD_PROPERTIES),)
+-$(error ADDITIONAL_BUILD_PROPERTIES must not be set before here: $(ADDITIONAL_BUILD_PROPERTIES))
+-endif
+-
+-ADDITIONAL_BUILD_PROPERTIES :=
+-
+-#
+-# -----------------------------------------------------------------
+-# Validate ADDITIONAL_PRODUCT_PROPERTIES.
+-ifneq ($(ADDITIONAL_PRODUCT_PROPERTIES),)
+-$(error ADDITIONAL_PRODUCT_PROPERTIES must not be set before here: $(ADDITIONAL_PRODUCT_PROPERTIES))
+-endif
+-
+-ADDITIONAL_PRODUCT_PROPERTIES :=
+-
+-#
+-# -----------------------------------------------------------------
++
++ADDITIONAL_BUILD_PROPERTIES :=
++
++ADDITIONAL_PRODUCT_PROPERTIES :=
++
++#
++# -----------------------------------------------------------------
+ # Add the product-defined properties to the build properties.
+ ifdef PRODUCT_SHIPPING_API_LEVEL
+ ADDITIONAL_BUILD_PROPERTIES += \
+diff --git a/core/Makefile b/core/Makefile
+index e1b0537..5eb15c4 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -15,7 +15,7 @@ endif
+ #$(2): the dest
+ define check-product-copy-files
+ $(if $(filter-out $(TARGET_COPY_OUT_SYSTEM_OTHER)/%,$(2)), \
+-  $(if $(filter %.apk, $(2)),$(error \
++  $(if $(filter %.apk, $(2)),$(warning \
+      Prebuilt apk found in PRODUCT_COPY_FILES: $(1), use BUILD_PREBUILT instead!)))
+ endef
+ # filter out the duplicate <source file>:<dest file> pairs.

@@ -1,0 +1,25 @@
+Subject: [PATCH] Allow run services without selinux domain
+
+diff --git a/init/service.cpp b/init/service.cpp
+index 37d3a8807..4d0990099 100644
+--- a/init/service.cpp
++++ b/init/service.cpp
+@@ -89,18 +89,6 @@ static Result<std::string> ComputeContextFromExecutable(const std::string& servi
+         computed_context = new_con;
+         free(new_con);
+     }
+-    if (rc == 0 && computed_context == mycon.get()) {
+-        std::ostringstream file_label_err;
+-        file_label_err << "File " << service_path << "(labeled \"" << filecon.get()
+-                       << "\") has incorrect label or no domain transition from " << mycon.get()
+-                       << " to another SELinux domain defined. Have you configured your "
+-                          "service correctly? https://source.android.com/security/selinux/"
+-                          "device-policy#label_new_services_and_address_denials";
+-        if (selinux_status_getenforce() > 0) {
+-            return Error() << file_label_err.str();
+-        }
+-        LOG(ERROR) << file_label_err.str();
+-    }
+     if (rc < 0) {
+         return Error() << "Could not get process context";
+     }

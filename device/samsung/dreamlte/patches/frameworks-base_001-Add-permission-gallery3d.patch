@@ -1,0 +1,15 @@
+Subject: [PATCH] Add permission whitelist for gallery3d app.
+
+diff --git a/data/etc/privapp-permissions-platform.xml b/data/etc/privapp-permissions-platform.xml
+index c6a61132476d..82b6a22d2740 100644
+--- a/data/etc/privapp-permissions-platform.xml
++++ b/data/etc/privapp-permissions-platform.xml
+@@ -408,4 +408,8 @@ applications that come with the platform
+         <permission name="android.permission.CONTROL_VPN"/>
+     </privapp-permissions>
+ 
++    <privapp-permissions package="com.android.gallery3d">
++        <permission name="android.permission.WRITE_MEDIA_STORAGE"/>
++    </privapp-permissions>
++
+ </permissions>

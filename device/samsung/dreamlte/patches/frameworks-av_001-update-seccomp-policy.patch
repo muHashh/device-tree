@@ -1,0 +1,25 @@
+Subject: [PATCH] update seccomp policy.
+
+diff --git a/services/mediaextractor/seccomp_policy/mediaextractor-arm.policy b/services/mediaextractor/seccomp_policy/mediaextractor-arm.policy
+index 7e8af1aa3f..23d349d77c 100644
+--- a/services/mediaextractor/seccomp_policy/mediaextractor-arm.policy
++++ b/services/mediaextractor/seccomp_policy/mediaextractor-arm.policy
+@@ -46,6 +46,5 @@
+ 
+ # for FileSource
+ readlinkat: 1
+-_llseek: 1
+ 
+ @include /system/etc/seccomp_policy/crash_dump.arm.policy
+diff --git a/services/mediaextractor/seccomp_policy/mediaextractor-x86.policy b/services/mediaextractor/seccomp_policy/mediaextractor-x86.policy
+index b5a6503cec..76403f2328 100644
+--- a/services/mediaextractor/seccomp_policy/mediaextractor-x86.policy
++++ b/services/mediaextractor/seccomp_policy/mediaextractor-x86.policy
+@@ -47,7 +47,6 @@
+ 
+ # for FileSource
+ readlinkat: 1
+-_llseek: 1
+ 
+ # Required by AddressSanitizer
+ gettid: 1

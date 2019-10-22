@@ -1,0 +1,24 @@
+# Copyright (C) 2012 The Android Open Source Project
+#
+# IMPORTANT: Do not create world writable files or directories.
+# This is a common source of Android security bugs.
+#
+
+# for Wi-Fi only models
+on property:ro.radio.noril=yes
+    stop ril-daemon
+
+# for recovering at restarting netd
+service recover_radio /system/bin/sh /system/etc/restart_radio_process.sh
+    class main
+    user root
+    group radio
+    disabled
+    oneshot
+
+on property:init.svc.netd=restarting
+    start recover_radio
+
+on post-fs-data
+    mkdir /efs/imei 0775 root radio
+    restorecon -R /efs/imei

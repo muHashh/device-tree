@@ -1,0 +1,6 @@
+subdirs = [
+    "bluetooth_impl",
+    "camera_provider",
+    "usb",
+    "livedisplay",
+]

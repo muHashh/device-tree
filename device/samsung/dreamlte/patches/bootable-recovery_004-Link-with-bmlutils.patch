@@ -1,0 +1,42 @@
+Subject: [PATCH] applypatch: Link with bmlutils and mtdutils properly.
+
+diff --git a/applypatch/Android.bp b/applypatch/Android.bp
+index cb0b3674..eca1ab12 100644
+--- a/applypatch/Android.bp
++++ b/applypatch/Android.bp
+@@ -56,12 +56,20 @@ cc_library_static {
+         "libotafault",
+         "libotautil",
+         "libz",
++        "libbmlutils",
++    ],
++
++    whole_static_libs: [
++        "libmtdutils",
+     ],
+ 
+     target: {
+         darwin: {
+             enabled: false,
+         },
++        linux_glibc: {
++            enabled: false,
++        },
+     },
+ }
+ 
+diff --git a/applypatch/applypatch.cpp b/applypatch/applypatch.cpp
+index 5c6c83f4..e5d24e52 100644
+--- a/applypatch/applypatch.cpp
++++ b/applypatch/applypatch.cpp
+@@ -38,8 +38,8 @@
+ #include <android-base/strings.h>
+ #include <openssl/sha.h>
+ 
+-#include "bmlutils/bmlutils.h"
+-#include "mtdutils/mtdutils.h"
++#include <bmlutils.h>
++#include <mtdutils.h>
+ 
+ #include "edify/expr.h"
+ #include "otafault/ota_io.h"

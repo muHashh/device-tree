@@ -1,0 +1,75 @@
+Subject: [PATCH] sdcard: allow device to skip bind-remount mounting
+
+diff --git a/sdcard/sdcard.cpp b/sdcard/sdcard.cpp
+index f8f1cbb455e..3b6eb7d53cb 100644
+--- a/sdcard/sdcard.cpp
++++ b/sdcard/sdcard.cpp
+@@ -46,6 +46,8 @@
+ #define PROP_SDCARDFS_DEVICE "ro.sys.sdcardfs"
+ #define PROP_SDCARDFS_USER "persist.sys.sdcardfs"
+ 
++#define PROP_LEGACY_SDCARDFS "ro.sys.sdcardfs.legacy-mounting"
++
+ static bool supports_esdfs(void) {
+     std::string filesystems;
+     if (!android::base::ReadFileToString("/proc/filesystems", &filesystems)) {
+@@ -81,6 +83,14 @@ static bool should_use_sdcardfs(void) {
+     }
+ }
+ 
++static bool should_use_legacy_sdcardfs_mounting(void) {
++    if (property_get_bool(PROP_LEGACY_SDCARDFS, false)) {
++        LOG(WARNING) << "Device requires legacy sdcardfs mounting";
++        return true;
++    }
++    return false;
++}
++
+ // NOTE: This is a vestigial program that simply exists to mount the in-kernel
+ // sdcardfs filesystem.  The older FUSE-based design that used to live here has
+ // been completely removed to avoid confusion.
+@@ -145,8 +155,8 @@ static bool sdcardfs_setup_bind_remount(const std::string& source_path, const st
+ static bool sdcardfs_setup_secondary(const std::string& default_path, const std::string& source_path,
+                                      const std::string& dest_path, uid_t fsuid, gid_t fsgid,
+                                      bool multi_user, userid_t userid, gid_t gid, mode_t mask,
+-                                     bool derive_gid, bool default_normal, bool use_esdfs) {
+-    if (use_esdfs) {
++                                     bool derive_gid, bool default_normal, bool use_esdfs, bool legacy) {
++    if (use_esdfs || legacy) {
+         return sdcardfs_setup(source_path, dest_path, fsuid, fsgid, multi_user, userid, gid, mask,
+                               derive_gid, default_normal, use_esdfs);
+     } else {
+@@ -160,6 +170,7 @@ static void run_sdcardfs(const std::string& source_path, const std::string& labe
+     std::string dest_path_default = "/mnt/runtime/default/" + label;
+     std::string dest_path_read = "/mnt/runtime/read/" + label;
+     std::string dest_path_write = "/mnt/runtime/write/" + label;
++    bool legacy = should_use_legacy_sdcardfs_mounting();
+ 
+     umask(0);
+     if (multi_user) {
+@@ -169,10 +180,10 @@ static void run_sdcardfs(const std::string& source_path, const std::string& labe
+                             AID_SDCARD_RW, 0006, derive_gid, default_normal, use_esdfs) ||
+             !sdcardfs_setup_secondary(dest_path_default, source_path, dest_path_read, uid, gid,
+                                       multi_user, userid, AID_EVERYBODY, 0027, derive_gid,
+-                                      default_normal, use_esdfs) ||
++                                      default_normal, use_esdfs, legacy) ||
+             !sdcardfs_setup_secondary(dest_path_default, source_path, dest_path_write, uid, gid,
+                                       multi_user, userid, AID_EVERYBODY, full_write ? 0007 : 0027,
+-                                      derive_gid, default_normal, use_esdfs)) {
++                                      derive_gid, default_normal, use_esdfs, legacy)) {
+             LOG(FATAL) << "failed to sdcardfs_setup";
+         }
+     } else {
+@@ -183,10 +194,10 @@ static void run_sdcardfs(const std::string& source_path, const std::string& labe
+                             AID_SDCARD_RW, 0006, derive_gid, default_normal, use_esdfs) ||
+             !sdcardfs_setup_secondary(dest_path_default, source_path, dest_path_read, uid, gid,
+                                       multi_user, userid, AID_EVERYBODY, full_write ? 0027 : 0022,
+-                                      derive_gid, default_normal, use_esdfs) ||
++                                      derive_gid, default_normal, use_esdfs, legacy) ||
+             !sdcardfs_setup_secondary(dest_path_default, source_path, dest_path_write, uid, gid,
+                                       multi_user, userid, AID_EVERYBODY, full_write ? 0007 : 0022,
+-                                      derive_gid, default_normal, use_esdfs)) {
++                                      derive_gid, default_normal, use_esdfs, legacy)) {
+             LOG(FATAL) << "failed to sdcardfs_setup";
+         }
+     }

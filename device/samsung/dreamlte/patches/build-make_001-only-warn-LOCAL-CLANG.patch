@@ -1,0 +1,15 @@
+Subject: [PATCH] build: only warn on LOCAL_CLANG set to false
+
+diff --git a/core/binary.mk b/core/binary.mk
+index e947213de4..c4c7ad93af 100644
+--- a/core/binary.mk
++++ b/core/binary.mk
+@@ -366,7 +366,7 @@ endif
+ # in the exception project list.
+ ifeq ($(my_clang),false)
+     ifeq ($(call find_in_local_clang_exception_projects,$(LOCAL_MODULE_MAKEFILE))$(LOCAL_IS_AUX_MODULE),)
+-        $(error $(LOCAL_MODULE_MAKEFILE): $(LOCAL_MODULE): LOCAL_CLANG is set to false)
++        $(warning $(LOCAL_MODULE_MAKEFILE): $(LOCAL_MODULE): LOCAL_CLANG is set to false)
+     endif
+ endif
+ 
