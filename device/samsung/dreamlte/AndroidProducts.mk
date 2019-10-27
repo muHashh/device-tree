@@ -15,3 +15,8 @@
 
 PRODUCT_MAKEFILES := \
     $(LOCAL_DIR)/rr_dreamlte.mk
+
+COMMON_LUNCH_CHOICES := \
+    rr_dreamlte-user \
+    rr_dreamlte-userdebug \
+    rr_dreamlte-eng
